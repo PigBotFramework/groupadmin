@@ -131,7 +131,7 @@ class groupadmin(PBF):
         if dataa['status'] == 'ok':
             self.client.msg().raw('[CQ:face,id=54] 执行成功！')
         else:
-            self.client.msg().raw('[CQ:face,id=151] 执行失败！\n原因：{}'.format(dataa['wording']))
+            self.client.msg().raw('[CQ:face,id=151] 执行失败！\n原因：{}\n执行的群：{}\nface54可能为GOCQ的bug，请提交issue！'.format(dataa['wording'], gid))
     
     def kick(self):
         uid = self.data.se.get('user_id')
