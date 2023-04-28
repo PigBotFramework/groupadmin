@@ -1,7 +1,8 @@
-import requests, time, cache
-from pbf import PBF
-from utils.RegCmd import RegCmd
-from utils.cqcode import CQCode
+import requests, time
+from pbf.controller import Cache
+from pbf.controller.PBF import PBF
+from pbf.utils.RegCmd import RegCmd
+from pbf.utils.CQCode import CQCode
 
 _name = "群聊管理"
 _version = "1.0.1"
@@ -12,76 +13,62 @@ _cost = 0.00
 class groupadmin(PBF):
     def __enter__(self):
         return [
-            RegCmd(
-                name = "发送公告 ",
-                usage = "发送公告 <公告内容>",
-                permission = "ao",
-                function = "groupadmin@sendnotice",
-                description = "发送公告",
-                mode = "群聊管理",
-                hidden = 0,
-                type = "command"
-            ),
-            RegCmd(
-                name = "全员禁言",
-                usage = "全员禁言",
-                permission = "admin",
-                function = "groupadmin@muteall",
-                description = "全体禁言",
-                mode = "群聊管理",
-                hidden = 0,
-                type = "command"
-            ),
-            RegCmd(
-                name = "解全员禁言",
-                usage = "解全员禁言",
-                permission = "admin",
-                function = "groupadmin@muteall",
-                description = "解全体禁言",
-                mode = "群聊管理",
-                hidden = 0,
-                type = "command"
-            ),
-            RegCmd(
-                name = "mute ",
-                usage = "mute <@要禁言的人> <禁言时长（秒）>",
-                permission = "ao",
-                function = "groupadmin@mute",
-                description = "禁言某人",
-                mode = "群聊管理",
-                hidden = 0,
-                type = "command"
-            ),
-            RegCmd(
-                name = "kick ",
-                usage = "kick <@要踢的人>",
-                permission = "ao",
-                function = "groupadmin@kick",
-                description = "踢出某人",
-                mode = "群聊管理",
-                hidden = 0,
-                type = "command"
-            ),
-            RegCmd(
-                name = "修改设置",
-                usage = "修改设置",
-                permission = "ao",
-                function = "groupadmin@setSettings",
-                description = "设置机器人设定的值",
-                mode = "群聊管理",
-                hidden = 0,
-                type = "command"
-            ),
-            RegCmd(
-                name = "删除好友 ",
-                usage = "删除好友 <QQ号>",
-                permission = "owner",
-                function = "groupadmin@delete_friend",
-                description = "让机器人删除好友",
-                mode = "防护系统",
-                hidden = 0,
-                type = "command"
-            )
+    @RegCmd(
+        name = "发送公告 ",
+        usage = "发送公告 <公告内容>",
+        permission = "ao",
+        function = "groupadmin@sendnotice",
+        description = "发送公告",
+        mode = "群聊管理"
+    )
+    @RegCmd(
+        name = "全员禁言",
+        usage = "全员禁言",
+        permission = "admin",
+        function = "groupadmin@muteall",
+        description = "全体禁言",
+        mode = "群聊管理"
+    )
+    @RegCmd(
+        name = "解全员禁言",
+        usage = "解全员禁言",
+        permission = "admin",
+        function = "groupadmin@muteall",
+        description = "解全体禁言",
+        mode = "群聊管理"
+    )
+    @RegCmd(
+        name = "mute ",
+        usage = "mute <@要禁言的人> <禁言时长（秒）>",
+        permission = "ao",
+        function = "groupadmin@mute",
+        description = "禁言某人",
+        mode = "群聊管理"
+    )
+    @RegCmd(
+        name = "kick ",
+        usage = "kick <@要踢的人>",
+        permission = "ao",
+        function = "groupadmin@kick",
+        description = "踢出某人",
+        mode = "群聊管理"
+    )
+    @RegCmd(
+        name = "修改设置",
+        usage = "修改设置",
+        permission = "ao",
+        function = "groupadmin@setSettings",
+        description = "设置机器人设定的值",
+        mode = "群聊管理"
+    )
+    @RegCmd(
+        name = "删除好友 ",
+        usage = "删除好友 <QQ号>",
+        permission = "owner",
+        function = "groupadmin@delete_friend",
+        description = "让机器人删除好友",
+        mode = "防护系统"
+    )
         ]
         
     def delete_friend(self):
@@ -153,7 +140,7 @@ class groupadmin(PBF):
         if ob == 404:
             self.client.msg().raw('开始修改群聊设置，在此期间，您可以随时发送"退出"来退出。')
             message = "设置项目列表："
-            for i in cache.get("settingName"):
+            for i in Cache.get("settingName"):
                 message += "\n{}. {}".format(i.get("id"), i.get("name"))
             self.client.msg().raw(message)
             self.client.msg().raw("请发送要修改的项的序号")
@@ -179,6 +166,6 @@ class groupadmin(PBF):
             key = args.get('key')
             self.commandListener.remove()
             self.mysql.commonx('UPDATE `botSettings` SET `'+str(key)+'`=%s WHERE `uuid`=%s and `qn`=%s', (message, self.data.uuid, gid))
-            cache.refreshFromSql('groupSettings')
+            Cache.refreshFromSql('groupSettings')
             
             self.client.msg().raw("修改成功！")
