@@ -11,66 +11,23 @@ _author = "xzyStudio"
 _cost = 0.00
 
 class groupadmin(PBF):
-    def __enter__(self):
-        return [
-    @RegCmd(
-        name = "发送公告 ",
-        usage = "发送公告 <公告内容>",
-        permission = "ao",
-        function = "groupadmin@sendnotice",
-        description = "发送公告",
-        mode = "群聊管理"
-    )
-    @RegCmd(
-        name = "全员禁言",
-        usage = "全员禁言",
-        permission = "admin",
-        function = "groupadmin@muteall",
-        description = "全体禁言",
-        mode = "群聊管理"
-    )
     @RegCmd(
         name = "解全员禁言",
         usage = "解全员禁言",
         permission = "admin",
-        function = "groupadmin@muteall",
         description = "解全体禁言",
         mode = "群聊管理"
     )
-    @RegCmd(
-        name = "mute ",
-        usage = "mute <@要禁言的人> <禁言时长（秒）>",
-        permission = "ao",
-        function = "groupadmin@mute",
-        description = "禁言某人",
-        mode = "群聊管理"
-    )
-    @RegCmd(
-        name = "kick ",
-        usage = "kick <@要踢的人>",
-        permission = "ao",
-        function = "groupadmin@kick",
-        description = "踢出某人",
-        mode = "群聊管理"
-    )
-    @RegCmd(
-        name = "修改设置",
-        usage = "修改设置",
-        permission = "ao",
-        function = "groupadmin@setSettings",
-        description = "设置机器人设定的值",
-        mode = "群聊管理"
-    )
+    def unmuteall(self):
+        self.muteall(mode=0)
+    
     @RegCmd(
         name = "删除好友 ",
         usage = "删除好友 <QQ号>",
         permission = "owner",
-        function = "groupadmin@delete_friend",
         description = "让机器人删除好友",
         mode = "防护系统"
     )
-        ]
-        
     def delete_friend(self):
         dataa = self.client.CallApi('delete_friend', {"friend_id":self.data.message})
     
@@ -81,6 +38,13 @@ class groupadmin(PBF):
         else:
             return 500
     
+    @RegCmd(
+        name = "发送公告 ",
+        usage = "发送公告 <公告内容>",
+        permission = "ao",
+        description = "发送公告",
+        mode = "群聊管理"
+    )
     def sendnotice(self):
         uid = self.data.se.get('user_id')
         gid = self.data.se.get('group_id')
@@ -91,7 +55,14 @@ class groupadmin(PBF):
             self.client.msg().raw('[CQ:face,id=54] 成功！')
         else:
             self.client.msg().raw('[CQ:face,id=151] 发送公告失败')
-            
+    
+    @RegCmd(
+        name = "全员禁言",
+        usage = "全员禁言",
+        permission = "admin",
+        description = "全体禁言",
+        mode = "群聊管理"
+    )
     def muteall(self, iff=1, mode=1):
         uid = self.data.se.get('user_id')
         gid = self.data.se.get('group_id')
@@ -104,6 +75,13 @@ class groupadmin(PBF):
         if iff:
             self.client.msg().raw(message)
     
+    @RegCmd(
+        name = "mute ",
+        usage = "mute <@要禁言的人> <禁言时长（秒）>",
+        permission = "ao",
+        description = "禁言某人",
+        mode = "群聊管理"
+    )
     def mute(self):
         uid = self.data.se.get('user_id')
         gid = self.data.se.get('group_id')
@@ -120,6 +98,13 @@ class groupadmin(PBF):
         else:
             self.client.msg().raw('[CQ:face,id=151] 执行失败！\n原因：{}\n执行的群：{}\nface54可能为GOCQ的bug，请提交issue！'.format(dataa['wording'], gid))
     
+    @RegCmd(
+        name = "kick ",
+        usage = "kick <@要踢的人>",
+        permission = "ao",
+        description = "踢出某人",
+        mode = "群聊管理"
+    )
     def kick(self):
         uid = self.data.se.get('user_id')
         gid = self.data.se.get('group_id')
@@ -130,7 +115,14 @@ class groupadmin(PBF):
             self.client.msg().raw('[CQ:face,id=54] 执行成功！')
         else:
             self.client.msg().raw('[CQ:face,id=151] 执行失败！')
-    
+
+    @RegCmd(
+        name = "修改设置",
+        usage = "修改设置",
+        permission = "ao",
+        description = "设置机器人设定的值",
+        mode = "群聊管理"
+    )
     def setSettings(self):
         uid = self.data.se.get('user_id')
         gid = self.data.se.get('group_id')
