@@ -3,6 +3,7 @@ from pbf.controller import Cache
 from pbf.controller.PBF import PBF
 from pbf.utils.RegCmd import RegCmd
 from pbf.utils.CQCode import CQCode
+from pbf.model.SettingNameModel import SettingNameModel
 
 _name = "群聊管理"
 _version = "1.0.1"
@@ -33,10 +34,7 @@ class groupadmin(PBF):
     
     def delete_msg(self):
         datajson = self.client.CallApi('delete_msg', {'message_id':self.data.se.get('message_id')})
-        if datajson['status'] == 'ok':
-            return 200
-        else:
-            return 500
+        return 200 if datajson['status'] == 'ok' else 500
     
     @RegCmd(
         name = "发送公告 ",
@@ -46,7 +44,6 @@ class groupadmin(PBF):
         mode = "群聊管理"
     )
     def sendnotice(self):
-        uid = self.data.se.get('user_id')
         gid = self.data.se.get('group_id')
         message = self.data.message
         
@@ -64,14 +61,10 @@ class groupadmin(PBF):
         mode = "群聊管理"
     )
     def muteall(self, iff=1, mode=1):
-        uid = self.data.se.get('user_id')
         gid = self.data.se.get('group_id')
         
         dataa = self.client.CallApi('set_group_whole_ban', {"group_id":gid,"enable":mode})
-        if dataa['status'] == 'ok':
-            message = '[CQ:face,id=54] 执行成功！'
-        else:
-            message = '[CQ:face,id=151] 执行失败！'
+        message = '[CQ:face,id=54] 执行成功！' if dataa['status'] == 'ok' else '[CQ:face,id=151] 执行失败！'
         if iff:
             self.client.msg().raw(message)
     
@@ -124,15 +117,15 @@ class groupadmin(PBF):
         mode = "群聊管理"
     )
     def setSettings(self):
-        uid = self.data.se.get('user_id')
         gid = self.data.se.get('group_id')
         message = self.data.message
         
         ob = self.commandListener.get()
+        model = SettingNameModel()
         if ob == 404:
             self.client.msg().raw('开始修改群聊设置，在此期间，您可以随时发送"退出"来退出。')
             message = "设置项目列表："
-            for i in Cache.get("settingName"):
+            for i in model._getAll():
                 message += "\n{}. {}".format(i.get("id"), i.get("name"))
             self.client.msg().raw(message)
             self.client.msg().raw("请发送要修改的项的序号")
@@ -144,9 +137,9 @@ class groupadmin(PBF):
         
         if step == 1:
             settings = self.data.groupSettings
-            data = self.mysql.selectx("SELECT * FROM `botSettingName` WHERE `id`=%s", (int(message)))[0]
+            data = model._get(id=message)[0]
             self.commandListener.set(args={'key':data.get("description")})
-            message = '[CQ:face,id=54] '+str(data.get('name'))+'：'+str(data.get('description'))+'\n     当前的值：'+str(settings.get(data.get('description')))
+            message = '[CQ:face,id=54] '+str(data.get('name'))+'：'+str(data.get('description'))+'\n     当前的值：'+str(settings._get(data.get('description')))
             if data.get('other') != '':
                 message += '\n     描述：'+str(data.get('other'))
             self.client.msg().raw(message)
@@ -157,7 +150,20 @@ class groupadmin(PBF):
                 message = None
             key = args.get('key')
             self.commandListener.remove()
-            self.mysql.commonx('UPDATE `botSettings` SET `'+str(key)+'`=%s WHERE `uuid`=%s and `qn`=%s', (message, self.data.uuid, gid))
-            Cache.refreshFromSql('groupSettings')
+            self.data.groupSettings._set(**{key: message})
             
             self.client.msg().raw("修改成功！")
+
+
+"""
+[2023-08-07 14:15:39] [BOT] [123456789/2417481092/871260826] [ERROR] Traceback (most recent call last):
+  File "/www/gch/v4/pbf/controller/PBF.py", line 89, in execPlugin
+    return getattr(instance, methodName)()
+  File "/www/gch/v4/pbf/utils/RegCmd.py", line 31, in wrapper
+    return func(*args, **kwargs)
+  File "/www/gch/v4/test/plugins/groupadmin/__init__.py", line 153, in setSettings
+    model._set({"uuid":self.data.uuid, "qn":gid}, **{key: message})
+  File "/www/gch/v4/pbf/model/__init__.py", line 382, in _set
+    if i.get(k) != type(i.get(k))(v):
+TypeError: NoneType takes no arguments
+"""
