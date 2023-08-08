@@ -84,7 +84,7 @@ class groupadmin(PBF):
         duration = message1[1] or 60
         
         userid = CQCode(message1[0]).get("qq")[0]
-        dataa = self.client.CallApi('set_group_ban', {"group_id":gid,"userid":userid,"duration":duration})
+        dataa = self.client.CallApi('set_group_ban', {"group_id":gid,"user_id":userid,"duration":duration})
         
         if dataa['status'] == 'ok':
             self.client.msg().raw('[CQ:face,id=54] 执行成功！')
